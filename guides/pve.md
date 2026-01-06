@@ -10,11 +10,9 @@ Compilation of [Proxmox VE](https://proxmox.com/en/products/proxmox-virtual-envi
 > The `{` and `}` surrounding some scripts are meant to avoid poisoning your bash history with individual commands, etc. You can ignore them if you manually copy paste the individual commands.
 
 ## Table of contents
-- [Install](#install)
-  - [PVE initial setup](#pve-initial-setup)
-  - [Guest initial setup](#guest-initial-setup)
+- [PVE initial setup](#pve-initial-setup)
+- [Guest initial setup](#guest-initial-setup)
 
-## Install
 ## PVE initial setup
 Below are instructions that I personally use for initial setup of Proxmox.
 
