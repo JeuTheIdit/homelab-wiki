@@ -4,7 +4,7 @@ Compilation of Brocade's ICX series switch tips and tricks to share.
 ## Table of contents
 - [Setting up and firmware](#setting-up-and-firmware)
 - [Shortcuts and commands](#shortcuts-and-commands)
-- [Enable and configure terminal](#enabling-and-configure-terminal)
+- [Enable and configure terminal](#enable-and-configure-terminal)
 - [L3 routing](#l3-routing)
   - [L3 setup with Pfsense or Opnsense](#l3-setup-with-pfsense-or-opnsense)
 - [DHCP helper-address](#dhcp-helper-address)
