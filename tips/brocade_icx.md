@@ -42,7 +42,7 @@ See below for official Brocade documentation.
 - <https://support.ruckuswireless.com/documents/3458-fastiron-08-0-95-ga-layer-3-routing-configuration-guide>
 
 ### L3 setup with Pfsense or Opnsense
-Follow [this guide](https://www.michaelstinkerings.org/how-to-setup-l3-switch-to-work-with-pfsense/) to setup layer 3 routing in conjunction with pPfsense or Opnsense.
+Follow [this guide](https://www.michaelstinkerings.org/how-to-setup-l3-switch-to-work-with-pfsense/) to setup layer 3 routing in conjunction with Pfsense or Opnsense.
 
 The `ip default-network {router ip address}` did not work for me as listed in the guide to create a default route to the firewall. Use `ip route 0.0.0.0 0.0.0.0 {router ip address}` instead as listed in [this guide](https://greigmitchell.co.uk/2019/08/configuring-intervlan-routing-with-a-layer-3-switch-and-pfsense/).
 
