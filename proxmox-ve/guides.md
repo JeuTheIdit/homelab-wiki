@@ -586,11 +586,11 @@ lspci -vvv
 
 Find the GPU using the device ID. In my case it was `c4:00`.
 
-![](https://gist.github.com/user-attachments/assets/1c572435-6b86-4c9b-b4e9-95c7c332a4ef)
+![](https://github.com/JeuTheIdit/homelab-wiki/blob/main/static/sr-iov-1.png)
 
 More specifically.
 
-![](https://gist.github.com/user-attachments/assets/cf310f77-6312-4193-a0a7-36ccad669769)
+![](https://github.com/JeuTheIdit/homelab-wiki/blob/main/static/sr-iov-2.png)
 
 > [!NOTE]
 > Save the device ID for the next section.
@@ -602,7 +602,7 @@ Find the GPU device under `/sys/devices`, where `xx:xx` is the device ID that yo
 find /sys/devices -name "*xx:xx*" -type d
 ```
 
-![](https://gist.github.com/user-attachments/assets/92636372-5ec7-4b17-ac4e-a6cae84e828a)
+![](https://github.com/JeuTheIdit/homelab-wiki/blob/main/static/sr-iov-3.png)
 
 Go to that directory and look for `sriov_numvfs` and run the following, where `x` is the number of functions you want, in multiples of 2.
 
@@ -612,7 +612,7 @@ echo x > sriov_numvfs
 
 Now you should have `x` additional devices using `lspci` or when [checking IOMMU groups](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#checking-iommu-groups). In my case, 4 additional.
 
-![](https://gist.github.com/user-attachments/assets/f55b80b0-7f9d-49fb-9816-b74051a44522)
+![](https://github.com/JeuTheIdit/homelab-wiki/blob/main/static/sr-iov-4.png)
 
 #### Passthrough GPU function to VM
 Now, just passthrough one of the GPU functions to a VM [like normal](#gpu-passthrough) and [install drivers and modules](#install-intel-drivers-and-modules).
