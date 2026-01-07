@@ -574,11 +574,11 @@ Download and install the [latest Intel drivers](https://www.intel.com/content/ww
 
 #### Check for SR-IOV functionality
 > [!IMPORTANT]
-> Do not [bind the GPU to VFIO](#binding-pcie-devices-to-vfio) when using SR-IOV functions. The `xe` driver must be in use.
+> Do not [bind the GPU to VFIO](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#binding-pcie-devices-to-vfio) when using SR-IOV functions. The `xe` driver must be in use.
 
 With the correct BIOS settings enabled and the firmware updated, the GPU should now have SR-IOV functions enabled.
 
-To check, [look up the GPU device ID](#checking-iommu-groups) and run the following.
+To check, [look up the GPU device ID](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#checking-iommu-groups) and run the following.
 
 ```
 lspci -vvv
@@ -610,7 +610,7 @@ Go to that directory and look for `sriov_numvfs` and run the following, where `x
 echo x > sriov_numvfs
 ```
 
-Now you should have `x` additional devices using `lspci` or when [checking IOMMU groups](#checking-iommu-groups). In my case, 4 additional.
+Now you should have `x` additional devices using `lspci` or when [checking IOMMU groups](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#checking-iommu-groups). In my case, 4 additional.
 
 ![](https://gist.github.com/user-attachments/assets/f55b80b0-7f9d-49fb-9816-b74051a44522)
 
@@ -868,33 +868,4 @@ If you installed this to run docker containers you can verify if it worked by ru
 
 ```bash
 docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
-```
-
-## Check which PCI(e) device a drm device belongs to
-If you have multiple GPUs you will likely have multiple `/dev/dri/card*` and `/dev/dri/renderD*` devices.    
-
-Note the values before and after the `->`. In this example, `01:00.0`, `05:00.0` and `09:00.0`.
-
-```bash
-ls -l /sys/class/drm/*/device
-```
-
-```bash
-lrwxrwxrwx 1 root root 0 May 17 07:54 /sys/class/drm/card0/device -> ../../../0000:05:00.0
-lrwxrwxrwx 1 root root 0 May 17 07:54 /sys/class/drm/card1/device -> ../../../0000:09:00.0
-lrwxrwxrwx 1 root root 0 May 17 07:54 /sys/class/drm/card2/device -> ../../../0000:01:00.0
-lrwxrwxrwx 1 root root 0 May 17 07:54 /sys/class/drm/renderD128/device -> ../../../0000:09:00.0
-lrwxrwxrwx 1 root root 0 May 17 07:54 /sys/class/drm/renderD129/device -> ../../../0000:01:00.0
-```
-
-You can then cross-reference them with the first column of `lspci | grep -i "VGA"`.
-
-```bash
-lspci | grep -i "VGA"
-```
-
-```bash
-01:00.0 VGA compatible controller: NVIDIA Corporation GA102 [GeForce RTX 3090] (rev a1)
-05:00.0 VGA compatible controller: ASPEED Technology, Inc. ASPEED Graphics Family (rev 41)
-09:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] Cezanne [Radeon Vega Series / Radeon Vega Mobile Series] (rev c8)
 ```
