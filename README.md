@@ -1,2 +1,2 @@
-# homelab
-Documentation for my personal homelab
+# Homelab wiki
+Tips, guides, and files that help me maintain my homelab. Still a work in progress.
