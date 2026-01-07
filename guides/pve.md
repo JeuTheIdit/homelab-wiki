@@ -12,6 +12,8 @@ Compilation of [Proxmox VE](https://proxmox.com/en/products/proxmox-virtual-envi
 ## Table of contents
 - [PVE initial setup](#pve-initial-setup)
 - [Guest initial setup](#guest-initial-setup)
+- [GPU passthrough](#gpu-passthrough)
+- [SR-IOV](#sr-iov)
 
 ## PVE initial setup
 Below are instructions that I personally use for initial setup of Proxmox.
@@ -348,4 +350,551 @@ Enable fail2ban so it starts on boot.
 
 ```bash
 sudo systemctl enable fail2ban
+```
+
+## GPU passthrough
+This will likely never be a complete tutorial, just some often shared commands, tips and scripts.  
+
+Documentation:
+- <https://pve.proxmox.com/wiki/PCI(e)_Passthrough>
+- <https://pve.proxmox.com/wiki/PCI_Passthrough>
+- <https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF>
+
+### VM
+For VMs, [add VFIO modules](#add-vfio-modules), [bind the GPU to VFIO drivers](#binding-pcie-devices-to-vfio) and verify that the `vfio-pci` driver is in use.
+
+```bash
+lspci -vnnk | awk '/VGA/{print $0}' RS= | grep -Pi --color "^|(?<=Kernel driver in use: |Kernel modules: )[^ ]+"
+```
+
+[Check the IOMMU groups](#passthrough-tips) and passthrough the GPU [using `Resource Mapping`](https://pve.proxmox.com/pve-docs/pve-admin-guide.html#resource_mapping) (PVE 8+).
+
+> [!TIP]
+> Make sure `PCI-Express` is checked when adding the mapped device to the VM. `ROM-Bar` should also be checked, but is by default.
+
+![](https://gist.github.com/user-attachments/assets/8b788ffe-67ce-48e4-908c-7e705fc2fc32)
+
+Once the GPU is passed to a VM, install drivers within the VM like normal.
+- [Intel](#install-intel-drivers-and-modules).
+- [Nvidia](#install-nvidia-drivers-and-modules).
+- AMD (coming soon).
+
+### CT
+Unlike VMs, we do not bind drivers to VFIO for CTs.
+
+Make sure you can see the device in PVE and that it uses the expected driver (`nvidia`, `amdgpu`, `i915`, `xe`, etc).
+
+```bash
+lspci -vnnk | awk '/VGA/{print $0}' RS= | grep -Pi --color "^|(?<=Kernel driver in use: |Kernel modules: )[^ ]+"
+```
+
+If nvidia devices are not available when the system boots you can work around it by adding this to your crontab via `crontab -e`
+
+```bash
+@reboot /usr/bin/nvidia-smi > /dev/null
+```
+
+#### Nvidia specific
+For Nvidia you can use the [Nvidia Container Toolkit](#install-and-configure-nvidia-container-toolkit). The benefits of this are that you do not have to install drivers inside the CT, don't have to add `dev`ices or check groups, it helps with changing render device names (multi GPU) and you will also not have the problem of different driver version conflicts on upgrades.
+
+It's very simple and my recommended way to do this for NVIDIA GPUs.
+
+Install the NVIDIA drivers [via `apt`](#via-apt) (recommended) or [via `.run` file](#via-run-file) and the [Nvidia Container Toolkit](#install-and-configure-nvidia-container-toolkit) on the node.
+
+Set a variable with a list of your CT IDs you want to configure. `pct list` shows them. In this example, it's CTs 400 and 55.
+
+```bash
+CTIDS=(400 55)
+```
+
+Then run the following into the node's CLI. This will prepend the needed lines into the CT's config file and reboot it.
+
+```bash
+{
+for ct in $(pct list | awk '/^[0-9]/ {print $1}'); do
+    if [[ ! "${CTIDS[@]}" =~ "$ct" ]]; then
+      continue
+    fi
+
+    echo "# $ct"
+  
+    if grep -q "/usr/share/lxc/hooks/nvidia" "/etc/pve/lxc/${ct}.conf"; then
+         echo "Already configured"
+    else
+        {
+            echo "lxc.hook.pre-start: sh -c '[ ! -f /dev/nvidia0 ] && /usr/bin/nvidia-modprobe -c0 -u'"
+            echo "lxc.environment: NVIDIA_VISIBLE_DEVICES=all"
+            echo "lxc.environment: NVIDIA_DRIVER_CAPABILITIES=all"
+            echo "lxc.hook.mount: /usr/share/lxc/hooks/nvidia"
+            cat /etc/pve/lxc/${ct}.conf
+        } > /etc/pve/lxc/${ct}.conf.new && mv /etc/pve/lxc/${ct}.conf.new /etc/pve/lxc/${ct}.conf
+
+        echo "Configured"
+
+        echo "pct reboot $ct"
+        pct reboot "$ct"
+    fi
+done
+}
+```
+
+If everything was done correctly, running `nvidia-smi` inside the CT should work.
+
+#### Generic
+Check the video and render group IDs inside the CT (from the node side). This is important later. The default ones below should work for Debian.
+
+Define which CT IDs we want to work with.
+
+```bash
+# CT IDs to check the groups for
+CTIDS=(5555 2222 55)
+```
+
+Check the video and render groups of the CTs with those IDs.
+
+```bash
+for id in ${CTIDS[@]}; do
+    echo "# $id"
+    pct exec $id getent group video render | awk -F: '{print $1,$3}'
+    echo ""
+done
+```
+
+This procedure simply calls `pct set IDOFCTHERE --devX /givenpath` for all the given paths and reboots the CT. It handles the optional GIDs (for the video and render groups) when given. Modify it to add more devices and change the GIDs. Invalid paths and CTs will be skipped so there's no need to remove anything you don't have.
+
+Define which CT IDs we want to work with and which devices to pass to them.
+
+```bash
+# CT IDs to add the devices to
+CTIDS=(5555 2222 55)
+```
+
+Also see [Check which PCI(e) device a drm device belongs to](#check-which-pcie-device-a-drm-device-belongs-to).    
+
+```bash
+# Devices to add to the CT(s)
+DEVICES=(
+  "/dev/dri/renderD128,gid=104"
+  "/dev/dri/renderD129,gid=104"
+  "/dev/dri/renderD130,gid=104"
+  "/dev/dri/renderD131,gid=104"
+  "/dev/dri/card0,gid=44"
+  "/dev/dri/card1,gid=44"
+  "/dev/dri/card2,gid=44"
+  "/dev/dri/card3,gid=44"
+  "/dev/kfd,gid=104"
+  "/dev/nvidia0"
+  "/dev/nvidia1"
+  "/dev/nvidia2"
+  "/dev/nvidia3"
+  "/dev/nvidiactl"
+  "/dev/nvidia-uvm"
+  "/invalid"
+  "/dev/nvidia-uvm-tools"
+)
+```
+
+Verify and show the group and user IDs for the devices on the node. The IDs/GIDs should match with the CT side above. If not modify them.    
+
+> [!NOTE]
+> You can run this inside the CT too.    
+
+```bash
+{
+function showDeviceInfo() {
+  echo "user userName group groupName device"
+  for device in "${DEVICES[@]}"; do
+        trimmedDevice=${device%%,*}
+
+        if [ -e "$trimmedDevice" ]; then
+          echo "$(stat -c '%u %U %g %G %n' "$trimmedDevice") $device"
+        fi
+  done
+}
+
+showDeviceInfo | column -t
+}
+```
+
+Run the rest of the script.
+
+```bash
+{
+for ct in $(pct list | awk '/^[0-9]/ {print $1}'); do
+  if [[ ! "${CTIDS[@]}" =~ "$ct" ]]; then
+    continue
+  fi
+
+  echo "# $ct"
+
+  index=0
+  for device in "${DEVICES[@]}"; do
+      trimmedDevice=${device%%,*}
+
+      if [ -e "$trimmedDevice" ]; then
+        echo "pct set $ct --dev${index} $device"
+        pct set "$ct" --dev${index} "$device"
+        ((index++))
+      fi
+  done
+
+  echo "pct reboot $ct"
+  pct reboot "$ct"
+done
+}
+```
+
+## SR-IOV
+### NICs
+Coming soon.
+
+### Intel Arc Pro B-Series
+These instructions may apply to other Intel GPUs, like the other [Battlemage GPUs](https://hmc-tech.com/lists/gpu/intel/arch/battlemage), but have not been tested.
+
+> [!WARNING]
+> SR-IOV with Intel B50 pro and B60 pro GPUs requires the following:
+> - Up-to-date firmware ([instructions below](#firmware)).
+> - Kernel 6.17 or newer on the node (PVE 9.1 or later).
+> - Kernel 6.17 or newer on the VM that the GPU function is being passed through to (I used Ubuntu 25.10).
+> 
+> It is possible to enable SR-IOV on earlier PVE releases if you [download the Proxmox patches to the kernel and make adjustments, including to apparmor](https://forum.level1techs.com/t/proxmox-9-0-intel-b50-sr-iov-finally-its-almost-here-early-adopters-guide/238107). I do not recommend this though.
+
+#### BIOS settings
+Ensure that `SR-IOV` and `Resizeable BAR` is enabled in the BIOS, which is [required for Intel GPUs](https://www.reddit.com/r/IntelArc/comments/15vpxm1/is_arc_supposed_to_be_unusable_without_rebar/).
+
+Documentation:
+- <https://www.intel.com/content/www/us/en/support/articles/000090831/graphics.html>
+
+#### Firmware
+The firmware on the GPU needs to be up-to-date, which may not be the case depending on when you bought it.
+
+The easiest way to update the firmware is by installing the latest drivers on Windows, which the firmware updates are packaged with. Either install it in a standalone Windows 11 machine, or [create a Windows 11 VM](#windows-guest-best-practices) and [passthrough the GPU](#gpu-passthrough).
+
+Download and install the [latest Intel drivers](https://www.intel.com/content/www/us/en/ark/products/series/242616/intel-arc-pro-b-series-graphics.html).
+
+#### Check for SR-IOV functionality
+> [!IMPORTANT]
+> Do not [bind the GPU to VFIO](#binding-pcie-devices-to-vfio) when using SR-IOV functions. The `xe` driver must be in use.
+
+With the correct BIOS settings enabled and the firmware updated, the GPU should now have SR-IOV functions enabled.
+
+To check, [look up the GPU device ID](#checking-iommu-groups) and run the following.
+
+```
+lspci -vvv
+```
+
+Find the GPU using the device ID. In my case it was `c4:00`.
+
+![](https://gist.github.com/user-attachments/assets/1c572435-6b86-4c9b-b4e9-95c7c332a4ef)
+
+More specifically.
+
+![](https://gist.github.com/user-attachments/assets/cf310f77-6312-4193-a0a7-36ccad669769)
+
+> [!NOTE]
+> Save the device ID for the next section.
+
+#### Add SR-IOV functions
+Find the GPU device under `/sys/devices`, where `xx:xx` is the device ID that you found above.
+
+```bash
+find /sys/devices -name "*xx:xx*" -type d
+```
+
+![](https://gist.github.com/user-attachments/assets/92636372-5ec7-4b17-ac4e-a6cae84e828a)
+
+Go to that directory and look for `sriov_numvfs` and run the following, where `x` is the number of functions you want, in multiples of 2.
+
+```bash
+echo x > sriov_numvfs
+```
+
+Now you should have `x` additional devices using `lspci` or when [checking IOMMU groups](#checking-iommu-groups). In my case, 4 additional.
+
+![](https://gist.github.com/user-attachments/assets/f55b80b0-7f9d-49fb-9816-b74051a44522)
+
+#### Passthrough GPU function to VM
+Now, just passthrough one of the GPU functions to a VM [like normal](#gpu-passthrough) and [install drivers and modules](#install-intel-drivers-and-modules).
+
+#### Function persist
+When rebooting the node, functions do not persist in the `sriov_numvfs` folder unless you add a cronjob or systemd service. Below are instructions for a cronjob.
+
+```bash
+crontab -e
+```
+
+Add the following, where `x` is the number of functions you want and `{path_to_sriov_numvfs_folder}` was the path we found above.
+
+```bash
+@reboot echo x > {path_to_sriov_numvfs_folder}
+```
+
+## Install intel drivers and modules
+
+By default, Intel GPU drivers are already baked into the kernel as long as you have the appropriate kernel version or later.
+
+To install compute and media related modules that may be needed for certain apps (plex, jellyfin, frigate, etc.), see [Intel's official documentation](https://dgpu-docs.intel.com/driver/client/overview.html).
+
+For your convenience.
+
+```bash
+# Refresh the local package index and install the package for managing software repositories
+sudo apt update
+sudo apt install -y software-properties-common
+
+# Add the intel graphics PPA
+sudo add-apt-repository -y ppa:kobuk-team/intel-graphics
+
+# Compute related packages
+sudo apt install -y libze-intel-gpu1 libze1 intel-metrics-discovery intel-opencl-icd clinfo intel-gsc
+
+# Media related packages
+sudo apt install -y intel-media-va-driver-non-free libmfx-gen1 libvpl2 libvpl-tools libva-glx2 va-driver-all vainfo
+```
+
+Install these for both VMs and CTs.
+
+Validate with `vainfo`.
+
+## Install nvidia drivers and modules
+### Via apt
+It's a simpler method as it uses packages straight from repos. They might be a bit older but this should be fine and it makes installation simpler. Most guides use nvidia's `.run` files but then you have to update the drivers manually. Instead you can use the drivers/libs from the debian apt repository and update them like any other package.  
+
+> [!NOTE]
+> This has the disadvantage that you, at least by default unless you pin versions, have less control over updates and thus might need to reboot more often. For example, when the version of the running driver doesn't match the libraries and tools any more.
+
+For Ubuntu, [follow the official documentation](https://documentation.ubuntu.com/server/how-to/graphics/install-nvidia-drivers/).
+
+For Debian, continue below which are based on the [official debian documentation](https://wiki.debian.org/NvidiaGraphicsDrivers), modified for easy copy/pasting.
+
+> [!NOTE]
+> These commands should work for nodes, VMs and CTs as long as they are based on Debian.
+>
+> This assumes you use the `root` user.
+
+> [!CAUTION]
+> These command are to be run on the node/VM/CT. Copy & paste.
+
+#### Prerequisites
+We need the `non-free` component. You should be able to run this to add the component to your [`/etc/apt/sources.list.d/debian.sources`](https://wiki.debian.org/SourcesList) file and update the lists
+
+```bash
+# Rewrites apt *.list files to *.sources in DEB822 format
+apt modernize-sources
+
+# Optional to delete the backup files of the modernize tool above
+find /etc/apt/sources.list.d/ -type f -name "*.bak" -delete
+
+# Rewrites the "Components:" line to add non-free and non-free-firmware
+sed -i 's/^Components: .*/Components: main contrib non-free non-free-firmware/' /etc/apt/sources.list.d/debian.sources
+
+# Updates the lists
+apt update
+```
+
+> [!IMPORTANT]
+> If your node/VM uses Secure Boot (check with `mokutil --sb-state`), follow this section.
+> 
+> Make sure to monitor the next boot process via noVNC. You will be asked for the password when importing the key.    
+>
+> ```bash
+> apt install dkms && dkms generate_mok
+>
+> dpkg -s proxmox-ve 2>&1 > /dev/null && apt install proxmox-default-headers || apt install linux-headers-generic
+>
+> # Set a simple password (a-z keys)
+> mokutil --import /var/lib/dkms/mok.pub
+>
+> # If you followed this section after you already installed the driver run this and reboot
+> # dpkg-reconfigure nvidia-kernel-dkms
+> ```
+
+#### Node and VM
+```bash
+apt install nvidia-detect
+
+# Will likely recommend "nvidia-driver"
+nvidia-detect
+
+# "nvidia-smi" and "nvtop" are optional but recommended
+apt install nvidia-driver nvidia-smi nvtop
+```
+
+#### CT
+For CTs we just need the libraries so `nvidia-driver` is replaced with `nvidia-driver-libs`.
+
+```bash
+# "nvidia-smi" and "nvtop" are optional but recommended
+apt install nvidia-driver-libs nvidia-smi nvtop
+```
+
+#### Verify installation
+Now see if `nvidia-smi` works. A reboot might be necessary for the node or VM.
+
+#### Post install
+You can enable Persistence Daemon, which may help save power and decrease access delays. See [official Nvidia documentation](https://download.nvidia.com/XFree86/Linux-x86_64/396.51/README/nvidia-persistenced.html).   
+
+> [!CAUTION]
+> These commands are to be run on the node or VM. Copy & paste.
+
+Enable and start it.
+
+```bash
+systemctl enable --now nvidia-persistenced.service
+```
+
+You can see the status in `nvidia-smi`.   
+
+![image](https://gist.github.com/user-attachments/assets/e92eb823-470b-43f4-8e02-d962e749b27c)
+
+### Via .run file
+This alternative to the apt installation method gives you more control over the version but you have to update yourself.   
+
+> [!NOTE]
+> These commands should work for both the nodes, VMs and CTs as long as they are based on debian/ubuntu.
+>
+> This assumes you use the `root` user.
+
+> [!CAUTION]
+> These command are to be run on the node/VM/CT. Copy & paste.
+
+#### Links and release notes
+For datacenter (Some links are broken but you can google for the version).
+- <https://developer.nvidia.com/datacenter-driver-archive>
+- <https://docs.nvidia.com/datacenter/tesla/index.html>
+
+For linux/unix.
+- <https://www.nvidia.com/en-us/drivers/unix/linux-amd64-display-archive/>
+- <https://www.nvidia.com/en-us/drivers/unix/>
+
+#### Download and install the .run file
+> [!IMPORTANT]
+> `{link_from_above}` below means the link you grabbed from above.
+
+##### CT
+```bash
+wget {link_from_above}
+chmod +x NVIDIA*.run
+# Adjust if necessary. Add -q to skip questions
+./$(ls -t NVIDIA*.run | head -n 1) --no-kernel-modules
+```
+
+##### VM
+```bash
+apt install -y linux-headers-generic gcc make dkms 
+wget {link_from_above}
+chmod +x NVIDIA*.run
+# Adjust if necessary. Add -q to skip questions
+./$(ls -t NVIDIA*.run | head -n 1) --dkms
+```
+
+##### Node
+```bash
+apt install -y proxmox-default-headers gcc make dkms
+wget {link_from_above}
+chmod +x NVIDIA*.run
+# Adjust if necessary. Add -q to skip questions
+./$(ls -t NVIDIA*.run | head -n 1) --dkms --disable-nouveau --kernel-module-type proprietary --no-install-libglvnd
+```
+
+##### Create and enable persistence daemon
+Also [see above](#enable-persistence-daemon).
+
+```bash
+cat <<EOF > /etc/systemd/system/nvidia-persistenced.service
+[Unit]
+Description=NVIDIA Persistence Daemon
+Wants=syslog.target
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/nvidia-persistenced --user nvpd
+ExecStopPost=/bin/rm -rf /var/run/nvidia-persistenced
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload && systemctl enable --now nvidia-persistenced.service
+```
+
+## Install and configure NVIDIA Container Toolkit
+
+> [!CAUTION]
+> These commands are to be run inside a CT or on the node. Copy & paste.
+
+See the table below for where to install for your specific situation.
+
+| Reason                                          | Install Location |
+| ----------------------------------------------- | ---------------- |
+| Pass through an Nvidia GPU to a CT              | Node             |
+| Give a passed through GPU to a docker container | CT               |
+| Give a passed through GPU to a docker container | VM               |
+
+Adapted from the [official Nvidia documentation](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html).
+
+```bash
+{
+apt update && apt install -y gpg curl --no-install-recommends
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor > /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+rm -f /etc/apt/sources.list.d/nvidia-container-toolkit.list
+cat <<EOF > /etc/apt/sources.list.d/nvidia-container-toolkit.sources
+Types: deb
+URIs: http://nvidia.github.io/libnvidia-container/stable/deb/amd64/
+Suites: /
+Components:
+Signed-By: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+EOF
+
+apt update && apt install -y nvidia-container-toolkit
+
+systemctl status docker.service >/dev/null 2>&1 && nvidia-ctk runtime configure --runtime=docker
+
+# This is needed for LXC or you might get an error like
+# nvidia-container-cli: mount error: failed to add device rules: unable to find any existing
+# device filters attached to the cgroup: # bpf_prog_query(BPF_CGROUP_DEVICE) failed: operation
+# not permitted: unknown
+if [[ $(systemd-detect-virt) == "lxc" ]]; then
+  nvidia-ctk config -i --set nvidia-container-cli.no-cgroups=true
+fi
+
+systemctl status docker.service >/dev/null 2>&1 && systemctl restart docker.service
+}
+```
+
+If you installed this to run docker containers you can verify if it worked by runing the following.
+
+```bash
+docker run --rm --runtime=nvidia --gpus all ubuntu nvidia-smi
+```
+
+## Check which PCI(e) device a drm device belongs to
+If you have multiple GPUs you will likely have multiple `/dev/dri/card*` and `/dev/dri/renderD*` devices.    
+
+Note the values before and after the `->`. In this example, `01:00.0`, `05:00.0` and `09:00.0`.
+
+```bash
+ls -l /sys/class/drm/*/device
+```
+
+```bash
+lrwxrwxrwx 1 root root 0 May 17 07:54 /sys/class/drm/card0/device -> ../../../0000:05:00.0
+lrwxrwxrwx 1 root root 0 May 17 07:54 /sys/class/drm/card1/device -> ../../../0000:09:00.0
+lrwxrwxrwx 1 root root 0 May 17 07:54 /sys/class/drm/card2/device -> ../../../0000:01:00.0
+lrwxrwxrwx 1 root root 0 May 17 07:54 /sys/class/drm/renderD128/device -> ../../../0000:09:00.0
+lrwxrwxrwx 1 root root 0 May 17 07:54 /sys/class/drm/renderD129/device -> ../../../0000:01:00.0
+```
+
+You can then cross-reference them with the first column of `lspci | grep -i "VGA"`.
+
+```bash
+lspci | grep -i "VGA"
+```
+
+```bash
+01:00.0 VGA compatible controller: NVIDIA Corporation GA102 [GeForce RTX 3090] (rev a1)
+05:00.0 VGA compatible controller: ASPEED Technology, Inc. ASPEED Graphics Family (rev 41)
+09:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] Cezanne [Radeon Vega Series / Radeon Vega Mobile Series] (rev c8)
 ```
