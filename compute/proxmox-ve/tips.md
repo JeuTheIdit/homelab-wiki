@@ -1,6 +1,6 @@
 # Proxmox VE tips
 
-Compilation of [Proxmox VE](https://proxmox.com/en/products/proxmox-virtual-environment/overview) (PVE) guides and tips to share.    
+Compilation of [Proxmox VE](https://proxmox.com/en/products/proxmox-virtual-environment/overview) (PVE) tips and tricks to share.    
 
 > [!NOTE]
 > Any tips and tricks being done within PVE CTs or VMs were created for Ubuntu, and even though they contain specific Ubuntu/Debian instructions, the concepts are generic enough and can be applied on most Linux distributions, even on those not based on Debian (for example, CentOS and OpenSUSE).
