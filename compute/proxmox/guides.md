@@ -262,7 +262,6 @@ type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh {server_user}@{server_ip_address
 > Now you will be able to add the public key.
 
 ### Hardening ssh settings
-
 Now that we have copied our public key to the server, we can harden the server ssh settings to only allow key based authentication.
 
 ```bash
@@ -286,7 +285,6 @@ sudo systemctl restart ssh
 ```
 
 ### Enable the firewall
-
 Now we will enable the Ubuntu ufw firewall. By default, ufw disallows all port when enabled. We start by adding and allowing the ports (`{app_port}`) we need for the applications (`{app}`) we are running, including the ssh port 22 so we can still remote manage the system.
 
 > [!TIP]
@@ -312,7 +310,6 @@ sudo ufw status
 ```
 
 ### Install and configure fail2ban
-
 [Fail2ban](https://github.com/fail2ban/fail2ban) is a daemon service that automatically detects malicious behaviour and bans offenders by updating the firewall rules. Basically once fail2ban identifies a malicious user they can’t connect to the server at all, requests to connect go unanswered until the ban is lifted.
 
 Install fail2ban.
@@ -631,7 +628,6 @@ Add the following, where `x` is the number of functions you want and `{path_to_s
 ```
 
 ## Install intel drivers and modules
-
 By default, Intel GPU drivers are already baked into the kernel as long as you have the appropriate kernel version or later.
 
 To install compute and media related modules that may be needed for certain apps (plex, jellyfin, frigate, etc.), see [Intel's official documentation](https://dgpu-docs.intel.com/driver/client/overview.html).
