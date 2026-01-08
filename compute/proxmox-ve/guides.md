@@ -370,7 +370,7 @@ For VMs, [add VFIO modules](tips.md#add-vfio-modules), [bind the GPU to VFIO dri
 lspci -vnnk | awk '/VGA/{print $0}' RS= | grep -Pi --color "^|(?<=Kernel driver in use: |Kernel modules: )[^ ]+"
 ```
 
-[Check the IOMMU groups](#passthrough-tips) and passthrough the GPU [using `Resource Mapping`](https://pve.proxmox.com/pve-docs/pve-admin-guide.html#resource_mapping) (PVE 8+).
+[Check the IOMMU groups](tips.md#checking-iommu-groups) and passthrough the GPU [using `Resource Mapping`](https://pve.proxmox.com/pve-docs/pve-admin-guide.html#resource_mapping) (PVE 8+).
 
 > [!TIP]
 > Make sure `PCI-Express` is checked when adding the mapped device to the VM. `ROM-Bar` should also be checked, but is by default.
@@ -577,11 +577,11 @@ Download and install the [latest Intel drivers](https://www.intel.com/content/ww
 
 #### Check for SR-IOV functionality
 > [!IMPORTANT]
-> Do not [bind the GPU to VFIO](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#binding-pcie-devices-to-vfio) when using SR-IOV functions. The `xe` driver must be in use.
+> Do not [bind the GPU to VFIO](tips.md#binding-pcie-devices-to-vfio) when using SR-IOV functions. The `xe` driver must be in use.
 
 With the correct BIOS settings enabled and the firmware updated, the GPU should now have SR-IOV functions enabled.
 
-To check, [look up the GPU device ID](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#checking-iommu-groups) and run the following.
+To check, [look up the GPU device ID](tips.md#checking-iommu-groups) and run the following.
 
 ```
 lspci -vvv
