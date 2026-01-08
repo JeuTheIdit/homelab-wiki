@@ -375,7 +375,7 @@ lspci -vnnk | awk '/VGA/{print $0}' RS= | grep -Pi --color "^|(?<=Kernel driver 
 > [!TIP]
 > Make sure `PCI-Express` is checked when adding the mapped device to the VM. `ROM-Bar` should also be checked, but is by default.
 
-![](https://gist.github.com/user-attachments/assets/8b788ffe-67ce-48e4-908c-7e705fc2fc32)
+![](https://github.com/JeuTheIdit/homelab-wiki/blob/main/static/gpu-passthrough-1.png)
 
 Once the GPU is passed to a VM, install drivers within the VM like normal.
 - [Intel](#install-intel-drivers-and-modules).
