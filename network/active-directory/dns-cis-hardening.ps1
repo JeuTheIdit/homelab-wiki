@@ -8,9 +8,9 @@ Write-Host "Starting Windows DNS CIS hardening..." -ForegroundColor Cyan
 # ----------------
 # VARIABLES
 # ----------------
-$Forwarders = @("1.1.1.1", "1.0.0.1") # Or Quad9
+$Forwarders = @("1.1.1.1", "8.8.8.8") # Or Quad9 9.9.9.9 for malware blocking
 $ADZoneName = "home.jnbolsen.com"
-$InternalIPs = @("192.168.1.10") # DNS/DC IP(s)
+$InternalIPs = @("192.168.60.203") # DNS/DC IP(s)
 
 # ----------------
 # CIS 18.9.3.1 (L1)
