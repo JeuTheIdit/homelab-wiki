@@ -15,11 +15,13 @@ Compilation of [Proxmox VE](https://proxmox.com/en/products/proxmox-virtual-envi
 - [GPU passthrough](#gpu-passthrough)
   - [VM](#vm)
   - [CT](#ct)
-- [Install intel drivers and modules](#install-intel-drivers-and-modules)
-- [Install nvidia drivers and modules](#install-nvidia-drivers-and-modules)
+- [Install Intel drivers and modules](#install-intel-drivers-and-modules)
+- [Install Nvidia drivers and modules](#install-nvidia-drivers-and-modules)
   - [Via apt](#via-apt)
   - [Via .run file](#via-run-file)
 - [SR-IOV](#sr-iov)
+  - [NICs](#nics)
+  - [Intel Arc Pro B-Series](#intel-arc-pro-b-series)
 
 ## PVE initial setup
 Below are instructions that I personally use for initial setup of Proxmox.
@@ -142,7 +144,7 @@ For any devices that are being fully passed through to VMs, [follow these instru
 
 For any devices you are planning to split with SR-IOV, **do not** bind to VFIO drivers.
 
-### Disable Cluster Daemons
+### Disable cluster daemons
 [Follow these instructions](tips.md#disable-pve-cluster-daemons) to disable cluster daemons.
 
 ## Guest initial setup
@@ -391,18 +393,18 @@ Make sure you can see the device in PVE and that it uses the expected driver (`n
 lspci -vnnk | awk '/VGA/{print $0}' RS= | grep -Pi --color "^|(?<=Kernel driver in use: |Kernel modules: )[^ ]+"
 ```
 
-If nvidia devices are not available when the system boots you can work around it by adding this to your crontab via `crontab -e`
+If Nvidia devices are not available when the system boots you can work around it by adding this to your crontab via `crontab -e`
 
 ```bash
 @reboot /usr/bin/nvidia-smi > /dev/null
 ```
 
 #### Nvidia specific
-For Nvidia you can use the [Nvidia Container Toolkit](#install-and-configure-nvidia-container-toolkit). The benefits of this are that you do not have to install drivers inside the CT, don't have to add `dev`ices or check groups, it helps with changing render device names (multi GPU) and you will also not have the problem of different driver version conflicts on upgrades.
+For Nvidia you can use the [Nvidia container toolkit](#install-and-configure-nvidia-container-toolkit). The benefits of this are that you do not have to install drivers inside the CT, don't have to add `dev`ices or check groups, it helps with changing render device names (multi GPU) and you will also not have the problem of different driver version conflicts on upgrades.
 
 It's very simple and my recommended way to do this for NVIDIA GPUs.
 
-Install the NVIDIA drivers [via `apt`](#via-apt) (recommended) or [via `.run` file](#via-run-file) and the [Nvidia Container Toolkit](#install-and-configure-nvidia-container-toolkit) on the node.
+Install the Nvidia drivers [via `apt`](#via-apt) (recommended) or [via `.run` file](#via-run-file) and the [Nvidia container toolkit](#install-and-configure-nvidia-container-toolkit) on the node.
 
 Set a variable with a list of your CT IDs you want to configure. `pct list` shows them. In this example, it's CTs 400 and 55.
 
@@ -555,7 +557,7 @@ Coming soon.
 These instructions may apply to other Intel GPUs, like the other [Battlemage GPUs](https://hmc-tech.com/lists/gpu/intel/arch/battlemage), but have not been tested.
 
 > [!WARNING]
-> SR-IOV with Intel B50 pro and B60 pro GPUs requires the following:
+> SR-IOV with Intel Pro B50 and Pro B60 GPUs requires the following:
 > - Up-to-date firmware ([instructions below](#firmware)).
 > - Kernel 6.17 or newer on the node (PVE 9.1 or later).
 > - Kernel 6.17 or newer on the VM that the GPU function is being passed through to (I used Ubuntu 25.10).
@@ -633,7 +635,7 @@ Add the following, where `x` is the number of functions you want and `{path_to_s
 @reboot echo x > {path_to_sriov_numvfs_folder}
 ```
 
-## Install intel drivers and modules
+## Install Intel drivers and modules
 By default, Intel GPU drivers are already baked into the kernel as long as you have the appropriate kernel version or later.
 
 To install compute and media related modules that may be needed for certain apps (plex, jellyfin, frigate, etc.), see [Intel's official documentation](https://dgpu-docs.intel.com/driver/client/overview.html).
@@ -659,9 +661,9 @@ Install these for both VMs and CTs.
 
 Validate with `vainfo`.
 
-## Install nvidia drivers and modules
+## Install Nvidia drivers and modules
 ### Via apt
-It's a simpler method as it uses packages straight from repos. They might be a bit older but this should be fine and it makes installation simpler. Most guides use nvidia's `.run` files but then you have to update the drivers manually. Instead you can use the drivers/libs from the debian apt repository and update them like any other package.  
+It's a simpler method as it uses packages straight from repos. They might be a bit older but this should be fine and it makes installation simpler. Most guides use Nvidia's `.run` files but then you have to update the drivers manually. Instead you can use the drivers/libs from the debian apt repository and update them like any other package.  
 
 > [!NOTE]
 > This has the disadvantage that you, at least by default unless you pin versions, have less control over updates and thus might need to reboot more often. For example, when the version of the running driver doesn't match the libraries and tools any more.
@@ -735,7 +737,7 @@ apt install nvidia-driver-libs nvidia-smi nvtop
 Now see if `nvidia-smi` works. A reboot might be necessary for the node or VM.
 
 #### Post install
-You can enable Persistence Daemon, which may help save power and decrease access delays. See [official Nvidia documentation](https://download.nvidia.com/XFree86/Linux-x86_64/396.51/README/nvidia-persistenced.html).   
+You can enable persistence daemon, which may help save power and decrease access delays. See [official Nvidia documentation](https://download.nvidia.com/XFree86/Linux-x86_64/396.51/README/nvidia-persistenced.html).   
 
 > [!CAUTION]
 > These commands are to be run on the node or VM. Copy & paste.
@@ -821,7 +823,7 @@ EOF
 systemctl daemon-reload && systemctl enable --now nvidia-persistenced.service
 ```
 
-## Install and configure NVIDIA Container Toolkit
+## Install and configure Nvidia container toolkit
 
 > [!CAUTION]
 > These commands are to be run inside a CT or on the node. Copy & paste.
