@@ -8,8 +8,8 @@ Write-Host "`n=== Windows DNS CIS Audit Report ===`n" -ForegroundColor Cyan
 # VARIABLES
 # ----------------
 $ADZoneName = "home.jnbolsen.com"
-$ExpectedForwarders = @("1.1.1.1", "1.0.0.1")
-$InternalIPs = @("192.168.1.10")
+$ExpectedForwarders = @("1.1.1.1", "8.8.8.8")
+$InternalIPs = @("192.168.60.203")
 
 # ----------------
 # Helper function
