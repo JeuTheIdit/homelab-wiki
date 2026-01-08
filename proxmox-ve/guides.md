@@ -22,7 +22,7 @@ Below are instructions that I personally use for initial setup of Proxmox.
 Before installing Proxmox, enable virtualization (VT-x, VT-d, SVM, ACS, IOMMU or whatever it's called for you), sr-iov, and resizeable bar support.
 
 ### No-subscription repositories
-[Enable no-subscription repositories](#enable-no-subscription-repositories).
+[Enable no-subscription repositories](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#enable-no-subscription-repositories).
 
 ### Enable IOMMU
 [Determine which bootloader you are using](https://pve.proxmox.com/pve-docs/pve-admin-guide.html#sysboot_determine_bootloader_used) (systemd or grub).
