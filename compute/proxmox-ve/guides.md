@@ -13,6 +13,8 @@ Compilation of [Proxmox VE](https://proxmox.com/en/products/proxmox-virtual-envi
 - [PVE initial setup](#pve-initial-setup)
 - [Guest initial setup](#guest-initial-setup)
 - [GPU passthrough](#gpu-passthrough)
+  - [VM](#vm)
+  - [CT](#ct)
 - [SR-IOV](#sr-iov)
 
 ## PVE initial setup
