@@ -112,7 +112,7 @@ update-initramfs -u -k all
 ```
 
 > [!TIP]
-> If you are using grub with an ext4 file system and get the message `No /etc/kernel/proxmox-boot-uuids found, skipping ESP sync.`, [follow these instructions to fix](#fix-boot-uuids-not-found-message-with-initial-ram-filesystem).
+> If you are using grub with an ext4 file system and get the message `No /etc/kernel/proxmox-boot-uuids found, skipping ESP sync.`, [follow these instructions to fix](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#fix-boot-uuids-not-found-message-with-initial-ram-filesystem).
 
 Reboot.
 ```bash
