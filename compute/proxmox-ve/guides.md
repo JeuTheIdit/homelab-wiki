@@ -18,7 +18,7 @@ Compilation of [Proxmox VE](https://proxmox.com/en/products/proxmox-virtual-envi
 - [Install intel drivers and modules](#install-intel-drivers-and-modules)
 - [Install nvidia drivers and modules](#install-nvidia-drivers-and-modules)
   - [Via apt](#via-apt)
-  - [Via .run](#via-run)
+  - [Via .run file](#via-run-file)
 - [SR-IOV](#sr-iov)
 
 ## PVE initial setup
