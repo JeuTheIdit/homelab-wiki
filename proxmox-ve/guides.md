@@ -137,7 +137,7 @@ For any devices that are being fully passed through to VMs, [follow these instru
 For any devices you are planning to split with SR-IOV, **do not** bind to VFIO drivers.
 
 ### Disable Cluster Daemons
-[Follow these instructions](#disable-pve-cluster-daemons) to disable cluster daemons.
+[Follow these instructions](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#disable-pve-cluster-daemons) to disable cluster daemons.
 
 ## Guest initial setup
 Below are instructions that I personally use for initial set up of guests (both VM and CT), after creation in PVE and installation onto disk.
