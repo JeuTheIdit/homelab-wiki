@@ -58,7 +58,7 @@ quiet iommu=pt
 
 Below is a screenshot of where to add this using the Intel version.
 
-![](static/proxmox-install-1)
+![](https://github.com/JeuTheIdit/homelab-wiki/blob/main/static/proxmox-install-1.png)
 
 Now refresh boot tool and reboot.
 
@@ -89,7 +89,7 @@ quiet iommu=pt
 
 Below is a screenshot of where to add this using the AMD version.
 
-![](https://gist.github.com/user-attachments/assets/1aa9b7ee-32ac-4d27-b986-0f579e56dc64)
+![](https://github.com/JeuTheIdit/homelab-wiki/blob/main/static/proxmox-install-2.png)
 
 Now update grub and reboot.
 
