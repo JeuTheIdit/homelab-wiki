@@ -55,6 +55,10 @@ Example from Unraid, running as user `nobody` and group `users`.
 user: "99:100"
 ```
 
+A better option is using images that allow adding PUID, GUID, and UMASK that the container uses in environment variables. Below are a list of image groups that can do this.
+- [Hotio.dev](https://hotio.dev/)
+- [Linuxserver.io](https://www.linuxserver.io/)
+
 ### Turn off tty and stdin
 ```bash
 tty: false
