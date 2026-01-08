@@ -118,7 +118,7 @@ update-initramfs -u -k all
 ```
 
 > [!TIP]
-> If you are using grub with an ext4 file system and get the message `No /etc/kernel/proxmox-boot-uuids found, skipping ESP sync.`, [follow these instructions to fix](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#fix-boot-uuids-not-found-message-with-initial-ram-filesystem).
+> If you are using grub with an ext4 file system and get the message `No /etc/kernel/proxmox-boot-uuids found, skipping ESP sync.`, [follow these instructions to fix](tips.md#fix-boot-uuids-not-found-message-with-initial-ram-filesystem).
 
 Reboot.
 ```bash
@@ -143,7 +143,7 @@ For any devices that are being fully passed through to VMs, [follow these instru
 For any devices you are planning to split with SR-IOV, **do not** bind to VFIO drivers.
 
 ### Disable Cluster Daemons
-[Follow these instructions](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#disable-pve-cluster-daemons) to disable cluster daemons.
+[Follow these instructions](tips.md#disable-pve-cluster-daemons) to disable cluster daemons.
 
 ## Guest initial setup
 Below are instructions that I personally use for initial set up of guests (both VM and CT), after creation in PVE and installation onto disk.
@@ -472,7 +472,7 @@ Define which CT IDs we want to work with and which devices to pass to them.
 CTIDS=(5555 2222 55)
 ```
 
-Also see [Check which PCI(e) device a drm device belongs to](#check-which-pcie-device-a-drm-device-belongs-to).    
+Also see [Check which PCI(e) device a drm device belongs to](tips.md#check-which-pcie-device-a-drm-device-belongs-to).    
 
 ```bash
 # Devices to add to the CT(s)
@@ -801,7 +801,7 @@ chmod +x NVIDIA*.run
 ```
 
 ##### Create and enable persistence daemon
-Also [see above](#enable-persistence-daemon).
+Also [see here](tips.md#enable-persistence-daemon).
 
 ```bash
 cat <<EOF > /etc/systemd/system/nvidia-persistenced.service
