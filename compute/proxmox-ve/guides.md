@@ -133,7 +133,7 @@ Depending on the system and which options you have, a lot of the output is going
 change here. What you are looking for is the line highlighted below `DMAR: IOMMU
 enabled`.
 
-![](https://gist.github.com/user-attachments/assets/e2c2f4f1-633b-4a1a-828e-536a92f30942)
+![](https://github.com/JeuTheIdit/homelab-wiki/blob/main/static/proxmox-install-3.png)
 
 If you have that, you are likely in good shape. Sometimes even this does not show up though.
 
