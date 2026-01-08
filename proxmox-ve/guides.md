@@ -361,7 +361,7 @@ Documentation:
 - <https://wiki.archlinux.org/title/PCI_passthrough_via_OVMF>
 
 ### VM
-For VMs, [add VFIO modules](#add-vfio-modules), [bind the GPU to VFIO drivers](#binding-pcie-devices-to-vfio) and verify that the `vfio-pci` driver is in use.
+For VMs, [add VFIO modules](tips.md#add-vfio-modules), [bind the GPU to VFIO drivers](tips.md#binding-pcie-devices-to-vfio) and verify that the `vfio-pci` driver is in use.
 
 ```bash
 lspci -vnnk | awk '/VGA/{print $0}' RS= | grep -Pi --color "^|(?<=Kernel driver in use: |Kernel modules: )[^ ]+"
