@@ -748,7 +748,7 @@ systemctl enable --now nvidia-persistenced.service
 
 You can see the status in `nvidia-smi`.   
 
-![image](https://gist.github.com/user-attachments/assets/e92eb823-470b-43f4-8e02-d962e749b27c)
+![](https://github.com/JeuTheIdit/homelab-wiki/blob/main/static/install-nvidia-1.png)
 
 ### Via .run file
 This alternative to the apt installation method gives you more control over the version but you have to update yourself.   
