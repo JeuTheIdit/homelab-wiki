@@ -132,7 +132,7 @@ enabled`.
 If you have that, you are likely in good shape. Sometimes even this does not show up though.
 
 ### Bind PCIe devices
-For any devices that are being fully passed through to VMs, [follow these instructions](#binding-pcie-devices-to-vfio) to bind those devices to VFIO drivers so that Proxmox does not have to switch drivers upon VM boot.
+For any devices that are being fully passed through to VMs, [follow these instructions](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#binding-pcie-devices-to-vfio) to bind those devices to VFIO drivers so that Proxmox does not have to switch drivers upon VM boot.
 
 For any devices you are planning to split with SR-IOV, **do not** bind to VFIO drivers.
 
