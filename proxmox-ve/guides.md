@@ -568,7 +568,7 @@ Documentation:
 #### Firmware
 The firmware on the GPU needs to be up-to-date, which may not be the case depending on when you bought it.
 
-The easiest way to update the firmware is by installing the latest drivers on Windows, which the firmware updates are packaged with. Either install it in a standalone Windows 11 machine, or [create a Windows 11 VM](main/proxmox-ve/tips.md#windows-guest-best-practices) and [passthrough the GPU](#gpu-passthrough).
+The easiest way to update the firmware is by installing the latest drivers on Windows, which the firmware updates are packaged with. Either install it in a standalone Windows 11 machine, or [create a Windows 11 VM](tips.md#windows-guest-best-practices) and [passthrough the GPU](#gpu-passthrough).
 
 Download and install the [latest Intel drivers](https://www.intel.com/content/www/us/en/ark/products/series/242616/intel-arc-pro-b-series-graphics.html).
 
