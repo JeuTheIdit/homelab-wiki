@@ -8,48 +8,51 @@ Below summarizes the network design for my home lab environment, including firew
 - Enforces policies for VLANs, .
 
 ## Brocade ICX layer 3 switch
+- Connected to the firewall using default/static routes.
 - Functions:
-  - Inter-VLAN routing
-  - Enforces ACLs for traffic between VLANs
-  - Provides segmentation for management, trusted, guest, and other VLANs
+  - Inter-VLAN routing.
+  - Enforces ACLs for traffic between VLANs.
+  - Line rate speed for all ports (24 1G, 4 10G).
 - Virtual interfaces:
-  - VLAN 10: Management (no internet, accessible only from VLAN 20)
-  - VLAN 20: Trusted (internet access, mostly full access to other VLANs)
-  - VLAN 30: Guest (internet only, no access to other VLANs)
-  - VLAN 40: Untrusted (IOT devices, internet access, limited access to VLAN 60)
-  - VLAN 50: Cameras (no internet access, can only access NVR in VLAN 60)
-  - VLAN 60: Servers (internet  access, limited access to other VLANs)
+  - VLAN 10: Management (no internet, accessible only from VLAN 20).
+  - VLAN 20: Trusted (internet access, mostly full access to other VLANs).
+  - VLAN 30: Guest (internet only, no access to other VLANs).
+  - VLAN 40: Untrusted (IOT devices, internet access, limited access to VLAN 60).
+  - VLAN 50: Cameras (no internet access, can only access NVR in VLAN 60).
+  - VLAN 60: Servers (internet access, limited access to other VLANs).
+  - VLAN 200: Transit (transit /30 network connecting switch and firewall).
 
 ## Proxmox VE hypervisors
-- Hardware: 2x1G ports (management/Internet), 2x25G ports (direct-attach storage)
+- Two (2) total.
+- Hardware: 2x1G ports (management/internet), 2x25G ports (direct-attach storage).
 - Storage mounts:
-  - NFS mounted on the hypervisor host at `/mnt/media`
-  - Bind mounted into VMs (e.g., Plex) as `/media`
+  - Remote mounts on the hypervisor hosts:
+    - Media NFS mount at `/mnt/media`.
+    - Download NFS mount at `/mnt/download`.
+  - Virtio-fs mounts to VMs:
+    - `/mnt/media` with tag `media-share` to `/mnt/media` in VM.
+    - `/mnt/download` with tag `download-share` to `/mnt/download` in VM.
 - Network:
   - 1G interfaces connected to VLAN 10 on L3 switch
   - 25G interfaces connected to storage server
 
 ## Truenas storage server
-- Hardware: 2x1G ports (management), 2x25G ports (direct-attach storage)
+- Hardware: 2x1G ports (management/internet), 2x25G ports (direct-attach storage).
 - Storage protocol: NFS
-- Exported dataset: `/mnt/media`
-- User mapping:
-  - Mapall User: `media`
-  - Mapall Group: `mediacenter`
-- Direct-attached 25G links connect to each Proxmox hypervisor for storage traffic.
-  - Storage interfaces use direct point-to-point links, no IP gateway required.
-  - Isolated from internet and all other networks.
+- ZFS pools:
+  - Slow (16x 18TB disks in 2x raidz2 with 2x 1.7TB special vdev SSD drives for metadata).
+  - Download (1x 4TB NVME).
+  - Backup (2x 3TB SSD mirror).
 
 ## Network segmentation
-- Direct-Attach Storage Network (25G)
-  - Separate /30 point-to-point subnets for each Proxmox ↔ TrueNAS link
-  - No default gateway
-  - Jumbo frames optional (MTU 9000)
-  - Air-gapped from internet
-
-- Management & Internet Network (1G)
-  - Routed via ICX L3 switch and OPNsense firewall
-  - Segmented by VLANs to enforce access control
+- Direct-Attach Storage Network (25G):
+  - Separate /30 point-to-point subnets for each Proxmox ↔ TrueNAS link.
+  - No default gateway.
+  - Jumbo frames optional (MTU 9000).
+  - Air-gapped from internet.
+- Management & Internet Network (1G):
+  - Routed via ICX L3 switch and OPNsense firewall.
+  - Segmented by VLANs to enforce access control.
 
 ## Storage Access Strategy
 - Hypervisor-mounted NFS is bind-mounted into VMs
