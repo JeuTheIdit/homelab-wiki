@@ -1,7 +1,7 @@
 # NGINX guides
 
 ## Table of contents
-- [SSL/TLS hardening](#ssl-tls-hardening)
+- [SSL/TLS hardening](#ssltls-hardening)
 - [Headers](#headers)
 
 ## SSL/TLS hardening
@@ -27,7 +27,7 @@ It aligns with CIS Level 1 guidance, with optional level 2 enhancements noted. F
 
 File location for NGINX: `/etc/nginx/snippets/ssl.conf`
 
-File: [`ssl.conf`](reverse-proxy/#ssl.conf)
+File: [`ssl.conf`](ssl.conf)
 
 ## Plex specific notes (important)
 
