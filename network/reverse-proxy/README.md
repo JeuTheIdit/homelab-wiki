@@ -89,7 +89,7 @@ It is intended for environments using:
 * Reverse-proxied internal services
 * Split-horizon DNS
 * Let’s Encrypt (DNS-01)
-* Hardened shared TLS configuration (`ssl.conf`)
+* Hardened shared TLS configuration ([`ssl.conf`](ssl.conf))
 
 ### What `proxy_params` is for
 
