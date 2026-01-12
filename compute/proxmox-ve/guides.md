@@ -243,7 +243,10 @@ On a Windows client.
 scp $env:USERPROFILE/.ssh/rsa.pub {server_user}@(server-ip-address}
 
 # ED25519 key
-scp $env:USERPROFILE/.ssh/id_ed25519.pub {server_name}@{server-ip-address}
+scp $env:USERPROFILE/.ssh/id_ed25519.pub {server_user}@{server-ip-address}
+
+# Or to append without overwriting existing keys
+cat $env:USERPROFILE/.ssh/id_ed25519.pub | ssh {server_user}@{server-ip-address} 'cat >> ~/.ssh/authorized_keys'
 ```
 
 > [!NOTE]
