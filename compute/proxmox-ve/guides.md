@@ -215,7 +215,9 @@ That generates an ssh key pair and will ask you for the location to store the ke
 
 > [!NOTE]
 > Why Ed25519?
+>
 > Ed25519 gives you maximum security per byte, fast cryptographic operations, small key material, and deterministic signatures that eliminate a class of attacks.
+>
 > RSA is still fine for legacy or compliance‑driven environments, but it forces you to carry larger key material and to guard against RNG failures.
 
 ### Copy public key from client to server
