@@ -240,12 +240,10 @@ On a Windows client.
 
 ```bash
 # RSA key
-type $env:USERPROFILE\.ssh\id_rsa.pub | ssh {server_user}@{server_ip_address} "cat >>
-.ssh/authorized_keys"
+scp $env:USERPROFILE/.ssh/rsa.pub {server_user}@(server-ip-address}
 
 # ED25519 key
-type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh {server_user}@{server_ip_address} "cat >>
-.ssh/authorized_keys"
+scp $env:USERPROFILE/.ssh/id_ed25519.pub {server_name}@{server-ip-address}
 ```
 
 > [!NOTE]
