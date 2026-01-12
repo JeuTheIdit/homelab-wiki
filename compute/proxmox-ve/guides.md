@@ -211,7 +211,7 @@ I use key based authentication to ssh into my servers. Make sure you have genera
 ssh-keygen -t ed25519 -a 100
 ```
 
-That generates an ssh key pair and will ask you for the location to store the keys. Keep the default which should be `/root/.ssh` if you are using a Debian based system as root, `/home/{user}/.ssh` if you are using a Debian based system as a user other than root, or the home directory `{user}\.ssh\` for Windows.
+That generates an ssh key pair and will ask you for the location to store the keys. Keep the default which should be `/root/.ssh` if you are using a Debian based system as root, `/home/{user}/.ssh` if you are using a Debian based system as a `{user}` other than root, or the home directory `{user}\.ssh\` for Windows.
 
 > [!NOTE]
 > Why Ed25519?
