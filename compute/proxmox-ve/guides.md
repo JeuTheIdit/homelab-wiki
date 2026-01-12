@@ -27,7 +27,11 @@ Compilation of [Proxmox VE](https://proxmox.com/en/products/proxmox-virtual-envi
 Below are instructions that I personally use for initial setup of Proxmox.
 
 ### Prepare the BIOS
-Before installing Proxmox, enable virtualization (VT-x, VT-d, SVM, ACS, IOMMU or whatever it's called for you), sr-iov, and resizeable bar support.
+Before installing Proxmox, enable the following in the BIOS:
+- Virtualization (VT-x, VT-d, SVM, ACS, IOMMU or whatever it's called for you)
+- SR-IOV
+- Resizeable bar
+- Change all populated pcie slots to the specific gen required (3, 4, or 5)
 
 ### No-subscription repositories
 [Enable no-subscription repositories](tips.md#enable-no-subscription-repositories).
@@ -204,13 +208,15 @@ sudo passwd -l root
 I use key based authentication to ssh into my servers. Make sure you have generated ssh keys **on the client computer(s) you will be remoting into the server from**.
 
 ```bash
-ssh-keygen
+ssh-keygen -t ed25519 -a 100
 ```
 
 That generates an ssh key pair and will ask you for the location to store the keys. Keep the default which should be `/root/.ssh` if you are using a Debian based system as root, `/home/{user}/.ssh` if you are using a Debian based system as a user other than root, or the home directory `{user}\.ssh\` for Windows.
 
-> [!IMPORTANT]
-> When asked for a passphrase for the keys, I would highly recommend you set one.
+> [!NOTE]
+> Why Ed25519?
+> Ed25519 gives you maximum security per byte, fast cryptographic operations, small key material, and deterministic signatures that eliminate a class of attacks.
+> RSA is still fine for legacy or compliance‑driven environments, but it forces you to carry larger key material and to guard against RNG failures.
 
 ### Copy public key from client to server
 
