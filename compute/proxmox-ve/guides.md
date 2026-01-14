@@ -62,7 +62,9 @@ quiet amd_pstate=active iommu=pt
 > [!NOTE]
 > IOMMU is enabled by default on AMD CPUs, so setting `amd_iommu=on` is not required.
 >
-> `amd_pstate=active` allows PVE to use CPPC by using the `amd_pstate` driver instead of falling back to `acpi-cpufreq` by default.
+> `amd_pstate=active` allows PVE to use CPPC by using the `amd-pstate` driver instead of falling back to `acpi-cpufreq` by default.
+>
+> Confirm the `amd-pstate` driver is active with `cpupower frequency-info` (should see `driver: amd-pstate`) and `cpupower idle-info` (should see C6 available).
 >
 > `iommu=pt` is pass-through mode for host devices.
 > - Devices used by the host bypass IOMMU translation.
@@ -100,7 +102,9 @@ quiet amd_pstate=active iommu=pt
 > [!NOTE]
 > IOMMU is enabled by default on AMD CPUs, so setting `amd_iommu=on` is not required.
 >
-> `amd_pstate=active` allows PVE to use CPPC by using the `amd_pstate` driver instead of falling back to `acpi-cpufreq` by default.
+> `amd_pstate=active` allows PVE to use CPPC by using the `amd-pstate` driver instead of falling back to `acpi-cpufreq` by default.
+>
+> Confirm the `amd-pstate` driver is active with `cpupower frequency-info` (should see `driver: amd-pstate`) and `cpupower idle-info` (should see C6 available).
 >
 > `iommu=pt` is pass-through mode for host devices.
 > - Devices used by the host bypass IOMMU translation.
