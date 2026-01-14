@@ -31,7 +31,9 @@ Before installing Proxmox, enable the following in the BIOS:
 - Virtualization (VT-x, VT-d, SVM, ACS, IOMMU or whatever it's called for you)
 - SR-IOV
 - Resizeable bar
-- Change all populated pcie slots to the specific gen required (3, 4, or 5)
+- 4G encoding (enabled by default)
+- Global c-states (enable, not auto)
+- DF c-states (enable, not auto)
 
 ### No-subscription repositories
 [Enable no-subscription repositories](tips.md#enable-no-subscription-repositories).
