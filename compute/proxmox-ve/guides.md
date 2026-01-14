@@ -56,11 +56,13 @@ quiet intel_iommu=on iommu=pt
 For AMD CPUs add the following `root=ZFS=rpool/ROOT/pve-1 boot=zfs` line or similar.
 
 ```bash
-quiet iommu=pt
+quiet amd_pstate=active iommu=pt
 ```
 
 > [!NOTE]
 > IOMMU is enabled by default on AMD CPUs, so setting `amd_iommu=on` is not required.
+>
+> `amd_pstate=active` allows PVE to use CPPC by using the `amd_pstate` driver instead of falling back to `acpi-cpufreq` by default.
 
 Below is a screenshot of where to add this using the Intel version.
 
@@ -87,11 +89,13 @@ quiet intel_iommu=on iommu=pt
 For AMD CPUs add the following to the `GRUB_CMDLINE_LINUX_DEFAULT` line.
 
 ```bash
-quiet iommu=pt
+quiet amd_pstate=active iommu=pt
 ```
 
 > [!NOTE]
 > IOMMU is enabled by default on AMD CPUs, so setting `amd_iommu=on` is not required.
+>
+> `amd_pstate=active` allows PVE to use CPPC by using the `amd_pstate` driver instead of falling back to `acpi-cpufreq` by default.
 
 Below is a screenshot of where to add this using the AMD version.
 
