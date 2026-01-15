@@ -38,6 +38,9 @@ Before installing Proxmox, enable the following in the BIOS:
 ### No-subscription repositories
 [Enable no-subscription repositories](tips.md#enable-no-subscription-repositories).
 
+### P-State EPP Driver
+[Enable the AMD P-State EPP driver `amd-pstate-epp`](https://github.com/JeuTheIdit/amd-pstate-epp-script/blob/main/README.md).
+
 ### Enable IOMMU
 [Determine which bootloader you are using](https://pve.proxmox.com/pve-docs/pve-admin-guide.html#sysboot_determine_bootloader_used) (systemd or grub).
 
@@ -58,15 +61,11 @@ quiet intel_iommu=on iommu=pt
 For AMD CPUs add the following `root=ZFS=rpool/ROOT/pve-1 boot=zfs` line or similar.
 
 ```bash
-quiet amd_pstate=active iommu=pt
+quiet iommu=pt
 ```
 
 > [!NOTE]
 > IOMMU is enabled by default on AMD CPUs, so setting `amd_iommu=on` is not required.
->
-> `amd_pstate=active` allows PVE to use CPPC (Collaborative Power Performance Control) by using the `amd-pstate` driver instead of falling back to `acpi-cpufreq` by default.
->
-> Confirm the `amd-pstate` driver is active with `cpupower frequency-info` (should see `driver: amd-pstate`) and `cpupower idle-info` (should see C6 available).
 >
 > `iommu=pt` is pass-through mode for host devices.
 > - Devices used by the host bypass IOMMU translation.
@@ -98,15 +97,11 @@ quiet intel_iommu=on iommu=pt
 For AMD CPUs add the following to the `GRUB_CMDLINE_LINUX_DEFAULT` line.
 
 ```bash
-quiet amd_pstate=active iommu=pt
+quiet iommu=pt
 ```
 
 > [!NOTE]
 > IOMMU is enabled by default on AMD CPUs, so setting `amd_iommu=on` is not required.
->
-> `amd_pstate=active` allows PVE to use CPPC (Collaborative Power Performance Control) by using the `amd-pstate` driver instead of falling back to `acpi-cpufreq` by default.
->
-> Confirm the `amd-pstate` driver is active with `cpupower frequency-info` (should see `driver: amd-pstate`) and `cpupower idle-info` (should see C6 available).
 >
 > `iommu=pt` is pass-through mode for host devices.
 > - Devices used by the host bypass IOMMU translation.
@@ -162,6 +157,9 @@ enabled`.
 ![](https://github.com/JeuTheIdit/homelab-wiki/blob/main/static/proxmox-install-3.png)
 
 If you have that, you are likely in good shape. Sometimes even this does not show up though.
+
+### P-State EPP Driver
+[Enable the AMD P-State EPP driver `amd-pstate-epp`](https://github.com/JeuTheIdit/amd-pstate-epp-script/blob/main/README.md).
 
 ### Bind PCIe devices
 For any devices that are being fully passed through to VMs, [follow these instructions](https://github.com/JeuTheIdit/homelab-wiki/blob/main/proxmox-ve/tips.md#binding-pcie-devices-to-vfio) to bind those devices to VFIO drivers so that Proxmox does not have to switch drivers upon VM boot.
