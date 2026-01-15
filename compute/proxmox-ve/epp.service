@@ -1,6 +1,6 @@
 [Unit]
 Description=Set all CPUs epp
-# Run this after the scaling-governor service executes
+# run this after the scaling-governor service executes
 After=scaling-governor.service
 Wants=scaling-governor.service
 
